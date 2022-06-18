@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from fastapi import FastAPI
 from fastapi import HTTPException, status
 from fastapi import Response
@@ -7,6 +7,9 @@ from fastapi import Query
 from fastapi import Header
 # from fastapi.responses import JSONResponse
 from models import Curso
+
+from time import sleep
+from fastapi import Depends
 
 app = FastAPI()
 
@@ -25,15 +28,26 @@ cursos = {
     }
 }
 
+def fake_db():
+    try:
+        print('Abrindo conexao com banco de dados..')    
+        sleep(2)
+    finally:
+        print('Fechando conexão com banco de dados')
+        sleep(1)
+
+
+# Injeção de dependencia
 @app.get('/cursos')
-async def get_cursos():
+async def get_cursos(db: Any = Depends(fake_db)):
     return cursos
 
 @app.get('/cursos/{curso_id}')
 async def get_curso(curso_id: int = Path(default=None,
                                         title='ID do curso', 
                                         description='Deve ser valor entre 1 e 5',
-                                        ge=1, lt=6)):
+                                        ge=1, lt=6),
+                                        db: Any = Depends(fake_db)):
     try:
         curso = cursos[curso_id]
         return curso
@@ -43,14 +57,17 @@ async def get_curso(curso_id: int = Path(default=None,
 
 
 @app.post('/cursos', status_code=status.HTTP_201_CREATED)
-async def post_curso(curso: Curso):
+async def post_curso(curso: Curso,
+                    db: Any = Depends(fake_db)):
     next_id: int = len(cursos) + 1
     curso.id = next_id
     cursos[next_id] = curso
     return curso
 
 @app.put('/cursos/{curso_id}')
-async def update_curso(curso_id: int, curso: Curso):
+async def update_curso(curso_id: int, 
+                       curso: Curso,
+                       db: Any = Depends(fake_db)):
     if curso_id in cursos:
         cursos[curso_id] = curso
         return curso
@@ -59,7 +76,8 @@ async def update_curso(curso_id: int, curso: Curso):
         detail=not_found(curso_id))
 
 @app.delete('/cursos/{curso_id}')
-async def destroy(curso_id: int):
+async def destroy(curso_id: int, 
+                  db: Any = Depends(fake_db)):
     try:
         del cursos[curso_id]
         return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -75,7 +93,8 @@ async def destroy(curso_id: int):
 async def calcular(a: int = Query(default=None, gt=0, lt=1000), 
                    b: int = Query(default=None, gt=0, lt=10000), 
                    c: Optional[int] = Query(default=0, ge=0, lt=10),
-                   x_geek: str = Header(default=None)):
+                   x_geek: str = Header(default=None),
+                   db: Any = Depends(fake_db)):
     soma = a + b + c
     print(f'X-GEEK: {x_geek}')
     return {'Resultado': soma}
@@ -83,6 +102,9 @@ async def calcular(a: int = Query(default=None, gt=0, lt=1000),
 
 def not_found(id):
     return 'Curso de id: {id} não encontrado'
+
+
+
 
 if __name__ == '__main__':
     import uvicorn
