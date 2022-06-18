@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi import HTTPException, status
 from fastapi import Response
 from fastapi import Path
+from fastapi import Query
 # from fastapi.responses import JSONResponse
 from models import Curso
 
@@ -65,6 +66,15 @@ async def destroy(curso_id: int):
     except:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=not_found(curso_id))
+
+# query parameters
+# http://localhost:8000/calculadora?a=1&b=2&c=3
+@app.get('/calculadora')
+async def calcular(a: int = Query(default=None, gt=0, lt=1000), 
+                   b: int = Query(default=None, gt=0, lt=10000), 
+                   c: Optional[int] = Query(default=0, ge=0, lt=10)):
+    soma = a + b + c
+    return {'Resultado': soma}
 
 
 def not_found(id):
