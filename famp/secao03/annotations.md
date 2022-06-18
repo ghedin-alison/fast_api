@@ -12,3 +12,4 @@
 
 
 ## Dependecy Injection
+- When another function must be executed before a new function. Like db connection or authentication. 

@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 from fastapi import FastAPI
 from fastapi import HTTPException, status
 from fastapi import Response
@@ -11,7 +11,9 @@ from models import Curso
 from time import sleep
 from fastapi import Depends
 
-app = FastAPI()
+app = FastAPI(title='Curso de API',
+            version='0.0.1',
+            description='Aqui vai o texto de descrição da API')
 
 cursos = {
     1: {
@@ -38,7 +40,11 @@ def fake_db():
 
 
 # Injeção de dependencia
-@app.get('/cursos')
+@app.get('/cursos', 
+        description='Retorna todos os cursos ou uma lista vazia', 
+        summary='Retorna todos os cursos',
+        response_model=Dict[int, Curso],
+        response_description="Cursos encontrados com sucesso!!!!")
 async def get_cursos(db: Any = Depends(fake_db)):
     return cursos
 
@@ -56,7 +62,9 @@ async def get_curso(curso_id: int = Path(default=None,
         detail='Curso não encontrado')
 
 
-@app.post('/cursos', status_code=status.HTTP_201_CREATED)
+@app.post('/cursos', 
+           status_code=status.HTTP_201_CREATED,
+           response_model=Curso)
 async def post_curso(curso: Curso,
                     db: Any = Depends(fake_db)):
     next_id: int = len(cursos) + 1
