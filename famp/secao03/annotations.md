@@ -5,3 +5,10 @@
 ## Query Parameters
  - Add parameters on endpoint http://localhost:8000/calculadora?a=1&b=2&c=3
  - Add Query() on endpoint treatment
+
+## Header Parameters
+- When declared, use "x_" to name headers variables.
+- To get on thunder client uses "x-" to name variables
+
+
+## Dependecy Injection
